@@ -30,8 +30,6 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
         }
         h2 { text-align: center; color: var(--main-color); margin-bottom: 20px; }
-        
-        /* تنسيق الخانات */
         input, textarea { 
             width: 100%; 
             padding: 12px; 
@@ -45,8 +43,6 @@
             outline: none;
         }
         input:focus, textarea:focus { border-color: var(--main-color); }
-
-        /* تنسيق الأزرار */
         button { 
             width: 100%; 
             padding: 15px; 
@@ -60,8 +56,6 @@
             margin-top: 10px; 
         }
         button:hover { background: #4752c4; transform: translateY(-2px); }
-
-        /* منطقة الإدارة والطلبات */
         .admin-area { margin-top: 30px; border-top: 1px solid #4f545c; padding-top: 20px; }
         .ticket { 
             background: #23272a; 
@@ -72,8 +66,6 @@
             position: relative; 
         }
         .ticket p { margin: 5px 0; font-size: 15px; }
-        
-        /* زر الحذف المطور (في الأسفل) */
         .delete-btn { 
             background: var(--danger); 
             color: white; 
@@ -86,8 +78,6 @@
             margin-top: 15px; 
             font-weight: bold;
         }
-        .delete-btn:hover { background: #c0392b; }
-
         .hidden { display: none; }
     </style>
 </head>
@@ -100,6 +90,7 @@
         <input type="text" id="realName" placeholder="اسمك الحقيقي">
         <input type="text" id="discordUser" placeholder="يوزرك في الديسكورد">
         <input type="number" id="age" placeholder="عمرك">
+        <input type="text" id="location" placeholder="من وين؟ (الدولة / المدينة)">
         <textarea id="experience" rows="5" placeholder="خبراتك في الديسكورد بالتفصيل..."></textarea>
         <button onclick="sendApp()">إرسال التقديم</button>
     </div>
@@ -114,35 +105,34 @@
 </div>
 
 <script>
-    // إعدادات قاعدة البيانات
     const firebaseConfig = {
         databaseURL: "https://zxf-support-default-rtdb.firebaseio.com"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // وظيفة إرسال الطلب
     function sendApp() {
         const name = document.getElementById('realName').value;
         const user = document.getElementById('discordUser').value;
         const age = document.getElementById('age').value;
+        const loc = document.getElementById('location').value;
         const exp = document.getElementById('experience').value;
 
-        if(!name || !user || !age || !exp) return alert("الرجاء إكمال جميع الحقول!");
+        if(!name || !user || !age || !loc || !exp) return alert("الرجاء إكمال جميع الحقول!");
 
         db.ref('staff_applications').push({
             name: name,
             user: user,
             age: age,
+            location: loc,
             exp: exp,
             date: new Date().toLocaleString()
         }).then(() => {
-            alert("تم إرسال طلبك بنجاح! سيتم مراجعته قريباً.");
+            alert("تم إرسال طلبك بنجاح!");
             location.reload();
         });
     }
 
-    // وظيفة فتح لوحة الإدارة بالباسوورد
     function openAdmin() {
         const pass = prompt("الرجاء إدخال كلمة سر الإدارة:");
         if(pass === "112233") {
@@ -154,7 +144,6 @@
         }
     }
 
-    // وظيفة عرض الطلبات
     function loadApps() {
         db.ref('staff_applications').on('value', (snap) => {
             const list = document.getElementById('appsList');
@@ -173,6 +162,7 @@
                         <p><b>👤 الاسم:</b> ${data.name}</p>
                         <p><b>🆔 الديسكورد:</b> ${data.user}</p>
                         <p><b>🎂 العمر:</b> ${data.age}</p>
+                        <p><b>🌍 من وين:</b> ${data.location}</p>
                         <p><b>🛠️ الخبرة:</b> ${data.exp}</p>
                         <p><small style="color:#b9bbbe;">📅 التاريخ: ${data.date}</small></p>
                         <button class="delete-btn" onclick="deleteTicket('${key}')">حذف الطلب 🗑️</button>
@@ -181,7 +171,6 @@
         });
     }
 
-    // وظيفة الحذف
     function deleteTicket(key) {
         if(confirm("هل أنت متأكد من حذف هذا الطلب نهائياً؟")) {
             db.ref('staff_applications').child(key).remove()
