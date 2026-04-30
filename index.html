@@ -7,7 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --main-color: #5865F2; --bg-color: #23272a; --card-bg: #2c2f33; --text-color: #ffffff; }
+        :root { --main-color: #5865F2; --bg-color: #23272a; --card-bg: #2c2f33; --text-color: #ffffff; --danger: #ed4245; }
         body { font-family: 'Arial', sans-serif; background-color: var(--bg-color); color: var(--text-color); padding: 20px; }
         .container { max-width: 500px; margin: auto; background: var(--card-bg); padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         h2 { text-align: center; color: var(--main-color); margin-bottom: 20px; }
@@ -15,7 +15,8 @@
         button { width: 100%; padding: 15px; border: none; border-radius: 8px; background: var(--main-color); color: white; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
         button:hover { background: #4752c4; transform: translateY(-2px); }
         .admin-area { margin-top: 30px; border-top: 1px solid #4f545c; padding-top: 20px; }
-        .ticket { background: #23272a; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-right: 5px solid var(--main-color); }
+        .ticket { background: #23272a; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-right: 5px solid var(--main-color); position: relative; }
+        .delete-btn { background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; position: absolute; left: 10px; top: 10px; }
         .hidden { display: none; }
     </style>
 </head>
@@ -42,7 +43,6 @@
 </div>
 
 <script>
-    // إعدادات Firebase الخاصة بك
     const firebaseConfig = {
         databaseURL: "https://zxf-support-default-rtdb.firebaseio.com"
     };
@@ -82,8 +82,10 @@
             list.innerHTML = "";
             snap.forEach((child) => {
                 const data = child.val();
+                const key = child.key; // هذا هو معرف الطلب للحذف
                 list.innerHTML += `
                     <div class="ticket">
+                        <button class="delete-btn" onclick="deleteTicket('${key}')">حذف 🗑️</button>
                         <p><b>الاسم:</b> ${data.name}</p>
                         <p><b>اليوزر:</b> ${data.user}</p>
                         <p><b>العمر:</b> ${data.age}</p>
@@ -91,7 +93,16 @@
                         <small>${data.date}</small>
                     </div>`;
             });
+            if (!snap.exists()) list.innerHTML = "لا توجد طلبات حالياً.";
         });
+    }
+
+    // وظيفة الحذف الجديدة
+    function deleteTicket(key) {
+        if(confirm("هل أنت متأكد من حذف هذا الطلب؟")) {
+            db.ref('staff_applications').child(key).remove()
+            .then(() => alert("تم الحذف بنجاح"));
+        }
     }
 </script>
 </body>
