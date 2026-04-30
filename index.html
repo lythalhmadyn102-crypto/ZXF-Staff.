@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقديم إدارة ZXF</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        :root { --main-color: #5865F2; --bg-color: #23272a; --card-bg: #2c2f33; --text-color: #ffffff; }
+        body { font-family: 'Arial', sans-serif; background-color: var(--bg-color); color: var(--text-color); padding: 20px; }
+        .container { max-width: 500px; margin: auto; background: var(--card-bg); padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        h2 { text-align: center; color: var(--main-color); margin-bottom: 20px; }
+        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #23272a; background: #40444b; color: white; box-sizing: border-box; font-size: 14px; }
+        button { width: 100%; padding: 15px; border: none; border-radius: 8px; background: var(--main-color); color: white; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        button:hover { background: #4752c4; transform: translateY(-2px); }
+        .admin-area { margin-top: 30px; border-top: 1px solid #4f545c; padding-top: 20px; }
+        .ticket { background: #23272a; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-right: 5px solid var(--main-color); }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>📋 تقديم إدارة ZXF</h2>
+    
+    <div id="formSection">
+        <input type="text" id="realName" placeholder="اسمك الحقيقي">
+        <input type="text" id="discordUser" placeholder="يوزرك في الديسكورد">
+        <input type="number" id="age" placeholder="عمرك">
+        <textarea id="experience" rows="5" placeholder="خبراتك في الديسكورد بالتفصيل..."></textarea>
+        <button onclick="sendApp()">إرسال التقديم</button>
+    </div>
+
+    <div class="admin-area">
+        <button onclick="openAdmin()" id="adminBtn" style="background: #4f545c;">لوحة تحكم الإدارة</button>
+        <div id="adminPanel" class="hidden">
+            <h3>📥 الطلبات الواردة:</h3>
+            <div id="appsList">جاري التحميل...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // إعدادات Firebase الخاصة بك
+    const firebaseConfig = {
+        databaseURL: "https://zxf-support-default-rtdb.firebaseio.com"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    function sendApp() {
+        const name = document.getElementById('realName').value;
+        const user = document.getElementById('discordUser').value;
+        const age = document.getElementById('age').value;
+        const exp = document.getElementById('experience').value;
+
+        if(!name || !user || !age || !exp) return alert("عبّي كل الخانات أول!");
+
+        db.ref('staff_applications').push({
+            name, user, age, exp, date: new Date().toLocaleString()
+        }).then(() => {
+            alert("تم إرسال طلبك بنجاح!");
+            location.reload();
+        });
+    }
+
+    function openAdmin() {
+        const pass = prompt("دخل باسوورد الإدارة:");
+        if(pass === "112233") {
+            document.getElementById('adminPanel').classList.remove('hidden');
+            document.getElementById('adminBtn').classList.add('hidden');
+            loadApps();
+        } else {
+            alert("الباسورد غلط!");
+        }
+    }
+
+    function loadApps() {
+        db.ref('staff_applications').on('value', (snap) => {
+            const list = document.getElementById('appsList');
+            list.innerHTML = "";
+            snap.forEach((child) => {
+                const data = child.val();
+                list.innerHTML += `
+                    <div class="ticket">
+                        <p><b>الاسم:</b> ${data.name}</p>
+                        <p><b>اليوزر:</b> ${data.user}</p>
+                        <p><b>العمر:</b> ${data.age}</p>
+                        <p><b>الخبرة:</b> ${data.exp}</p>
+                        <small>${data.date}</small>
+                    </div>`;
+            });
+        });
+    }
+</script>
+</body>
+</html>
