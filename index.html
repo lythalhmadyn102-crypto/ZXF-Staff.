@@ -7,16 +7,87 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        :root { --main-color: #5865F2; --bg-color: #23272a; --card-bg: #2c2f33; --text-color: #ffffff; --danger: #ed4245; }
-        body { font-family: 'Arial', sans-serif; background-color: var(--bg-color); color: var(--text-color); padding: 20px; }
-        .container { max-width: 500px; margin: auto; background: var(--card-bg); padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        :root { 
+            --main-color: #5865F2; 
+            --bg-color: #23272a; 
+            --card-bg: #2c2f33; 
+            --text-color: #ffffff; 
+            --danger: #ed4245; 
+        }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            padding: 20px; 
+            line-height: 1.6;
+        }
+        .container { 
+            max-width: 500px; 
+            margin: auto; 
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-radius: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); 
+        }
         h2 { text-align: center; color: var(--main-color); margin-bottom: 20px; }
-        input, textarea { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #23272a; background: #40444b; color: white; box-sizing: border-box; font-size: 14px; }
-        button { width: 100%; padding: 15px; border: none; border-radius: 8px; background: var(--main-color); color: white; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        
+        /* تنسيق الخانات */
+        input, textarea { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border-radius: 8px; 
+            border: 1px solid #23272a; 
+            background: #40444b; 
+            color: white; 
+            box-sizing: border-box; 
+            font-size: 14px; 
+            outline: none;
+        }
+        input:focus, textarea:focus { border-color: var(--main-color); }
+
+        /* تنسيق الأزرار */
+        button { 
+            width: 100%; 
+            padding: 15px; 
+            border: none; 
+            border-radius: 8px; 
+            background: var(--main-color); 
+            color: white; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            margin-top: 10px; 
+        }
         button:hover { background: #4752c4; transform: translateY(-2px); }
+
+        /* منطقة الإدارة والطلبات */
         .admin-area { margin-top: 30px; border-top: 1px solid #4f545c; padding-top: 20px; }
-        .ticket { background: #23272a; padding: 15px; border-radius: 10px; margin-bottom: 10px; border-right: 5px solid var(--main-color); position: relative; }
-        .delete-btn { background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; position: absolute; left: 10px; top: 10px; }
+        .ticket { 
+            background: #23272a; 
+            padding: 15px; 
+            border-radius: 10px; 
+            margin-bottom: 15px; 
+            border-right: 5px solid var(--main-color); 
+            position: relative; 
+        }
+        .ticket p { margin: 5px 0; font-size: 15px; }
+        
+        /* زر الحذف المطور (في الأسفل) */
+        .delete-btn { 
+            background: var(--danger); 
+            color: white; 
+            border: none; 
+            padding: 8px 15px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            width: 100%; 
+            margin-top: 15px; 
+            font-weight: bold;
+        }
+        .delete-btn:hover { background: #c0392b; }
+
         .hidden { display: none; }
     </style>
 </head>
@@ -34,74 +105,87 @@
     </div>
 
     <div class="admin-area">
-        <button onclick="openAdmin()" id="adminBtn" style="background: #4f545c;">لوحة تحكم الإدارة</button>
+        <button onclick="openAdmin()" id="adminBtn" style="background: #4f545c;">دخول الإدارة (خاص بالمسؤول)</button>
         <div id="adminPanel" class="hidden">
             <h3>📥 الطلبات الواردة:</h3>
-            <div id="appsList">جاري التحميل...</div>
+            <div id="appsList">جاري تحميل الطلبات...</div>
         </div>
     </div>
 </div>
 
 <script>
+    // إعدادات قاعدة البيانات
     const firebaseConfig = {
         databaseURL: "https://zxf-support-default-rtdb.firebaseio.com"
     };
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
+    // وظيفة إرسال الطلب
     function sendApp() {
         const name = document.getElementById('realName').value;
         const user = document.getElementById('discordUser').value;
         const age = document.getElementById('age').value;
         const exp = document.getElementById('experience').value;
 
-        if(!name || !user || !age || !exp) return alert("عبّي كل الخانات أول!");
+        if(!name || !user || !age || !exp) return alert("الرجاء إكمال جميع الحقول!");
 
         db.ref('staff_applications').push({
-            name, user, age, exp, date: new Date().toLocaleString()
+            name: name,
+            user: user,
+            age: age,
+            exp: exp,
+            date: new Date().toLocaleString()
         }).then(() => {
-            alert("تم إرسال طلبك بنجاح!");
+            alert("تم إرسال طلبك بنجاح! سيتم مراجعته قريباً.");
             location.reload();
         });
     }
 
+    // وظيفة فتح لوحة الإدارة بالباسوورد
     function openAdmin() {
-        const pass = prompt("دخل باسوورد الإدارة:");
+        const pass = prompt("الرجاء إدخال كلمة سر الإدارة:");
         if(pass === "112233") {
             document.getElementById('adminPanel').classList.remove('hidden');
             document.getElementById('adminBtn').classList.add('hidden');
             loadApps();
         } else {
-            alert("الباسورد غلط!");
+            alert("كلمة السر خاطئة!");
         }
     }
 
+    // وظيفة عرض الطلبات
     function loadApps() {
         db.ref('staff_applications').on('value', (snap) => {
             const list = document.getElementById('appsList');
             list.innerHTML = "";
+            
+            if (!snap.exists()) {
+                list.innerHTML = "<p style='text-align:center;'>لا توجد طلبات جديدة حالياً.</p>";
+                return;
+            }
+
             snap.forEach((child) => {
                 const data = child.val();
-                const key = child.key; // هذا هو معرف الطلب للحذف
+                const key = child.key;
                 list.innerHTML += `
                     <div class="ticket">
-                        <button class="delete-btn" onclick="deleteTicket('${key}')">حذف 🗑️</button>
-                        <p><b>الاسم:</b> ${data.name}</p>
-                        <p><b>اليوزر:</b> ${data.user}</p>
-                        <p><b>العمر:</b> ${data.age}</p>
-                        <p><b>الخبرة:</b> ${data.exp}</p>
-                        <small>${data.date}</small>
+                        <p><b>👤 الاسم:</b> ${data.name}</p>
+                        <p><b>🆔 الديسكورد:</b> ${data.user}</p>
+                        <p><b>🎂 العمر:</b> ${data.age}</p>
+                        <p><b>🛠️ الخبرة:</b> ${data.exp}</p>
+                        <p><small style="color:#b9bbbe;">📅 التاريخ: ${data.date}</small></p>
+                        <button class="delete-btn" onclick="deleteTicket('${key}')">حذف الطلب 🗑️</button>
                     </div>`;
             });
-            if (!snap.exists()) list.innerHTML = "لا توجد طلبات حالياً.";
         });
     }
 
-    // وظيفة الحذف الجديدة
+    // وظيفة الحذف
     function deleteTicket(key) {
-        if(confirm("هل أنت متأكد من حذف هذا الطلب؟")) {
+        if(confirm("هل أنت متأكد من حذف هذا الطلب نهائياً؟")) {
             db.ref('staff_applications').child(key).remove()
-            .then(() => alert("تم الحذف بنجاح"));
+            .then(() => alert("تم حذف الطلب بنجاح."));
         }
     }
 </script>
