@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تقديم إدارة ZXF</title>
+    <title>تقديم إدارة ARX</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -84,7 +84,7 @@
 <body>
 
 <div class="container">
-    <h2>📋 تقديم إدارة ZXF</h2>
+    <h2>📋 تقديم إدارة ARX</h2>
     
     <div id="formSection">
         <input type="text" id="realName" placeholder="اسمك الحقيقي">
@@ -103,80 +103,3 @@
         </div>
     </div>
 </div>
-
-<script>
-    const firebaseConfig = {
-        databaseURL: "https://zxf-support-default-rtdb.firebaseio.com"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    function sendApp() {
-        const name = document.getElementById('realName').value;
-        const user = document.getElementById('discordUser').value;
-        const age = document.getElementById('age').value;
-        const loc = document.getElementById('location').value;
-        const exp = document.getElementById('experience').value;
-
-        if(!name || !user || !age || !loc || !exp) return alert("الرجاء إكمال جميع الحقول!");
-
-        db.ref('staff_applications').push({
-            name: name,
-            user: user,
-            age: age,
-            location: loc,
-            exp: exp,
-            date: new Date().toLocaleString()
-        }).then(() => {
-            alert("تم إرسال طلبك بنجاح!");
-            location.reload();
-        });
-    }
-
-    function openAdmin() {
-        const pass = prompt("الرجاء إدخال كلمة سر الإدارة:");
-        if(pass === "8899916710") {
-            document.getElementById('adminPanel').classList.remove('hidden');
-            document.getElementById('adminBtn').classList.add('hidden');
-            loadApps();
-        } else {
-            alert("كلمة السر خاطئة!");
-        }
-    }
-
-    function loadApps() {
-        db.ref('staff_applications').on('value', (snap) => {
-            const list = document.getElementById('appsList');
-            list.innerHTML = "";
-            
-            if (!snap.exists()) {
-                list.innerHTML = "<p style='text-align:center;'>لا توجد طلبات جديدة حالياً.</p>";
-                return;
-            }
-
-            snap.forEach((child) => {
-                const data = child.val();
-                const key = child.key;
-                list.innerHTML += `
-                    <div class="ticket">
-                        <p><b>👤 الاسم:</b> ${data.name}</p>
-                        <p><b>🆔 الديسكورد:</b> ${data.user}</p>
-                        <p><b>🎂 العمر:</b> ${data.age}</p>
-                        <p><b>🌍 من وين:</b> ${data.location}</p>
-                        <p><b>🛠️ الخبرة:</b> ${data.exp}</p>
-                        <p><small style="color:#b9bbbe;">📅 التاريخ: ${data.date}</small></p>
-                        <button class="delete-btn" onclick="deleteTicket('${key}')">حذف الطلب 🗑️</button>
-                    </div>`;
-            });
-        });
-    }
-
-    function deleteTicket(key) {
-        if(confirm("هل أنت متأكد من حذف هذا الطلب نهائياً؟")) {
-            db.ref('staff_applications').child(key).remove()
-            .then(() => alert("تم حذف الطلب بنجاح."));
-        }
-    }
-</script>
-</body>
-</html>
